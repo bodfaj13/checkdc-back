@@ -14,8 +14,8 @@ var nodemailer = require('nodemailer');
 var client = nodemailer.createTransport({
   service: 'SendGrid',
   auth: {
-    user: 'ajiorion',
-    pass: 'ajiorion13'
+    user: process.env.SENDGRID_USER,
+    pass: process.env.SENDGRID_PASS
   }
 });
 
@@ -323,14 +323,14 @@ cron.schedule('* * * * *', () => {
                       subject: 'Check-dc Prescripton Reminder',
                       html: emailTemplate.reminder(data)
                     };
-                    // client.sendMail(sendEmail, function (err, info) {
-                    //   if (err) {
-                    //     console.log(error);
-                    //   }
-                    //   else {
-                    //     console.log('Message sent: ' + info.response);
-                    //   }
-                    // });
+                    client.sendMail(sendEmail, function (err, info) {
+                      if (err) {
+                        console.log(error);
+                      }
+                      else {
+                        console.log('Message sent: ' + info.response);
+                      }
+                    });
                   }).catch((err) => {
                     console.log(err)
                   })

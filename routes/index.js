@@ -316,7 +316,6 @@ cron.schedule('* * * * *', () => {
                   .populate('createdFor')
                   .populate('prescription')
                   .then((data) => {
-                    console.log(data)
                     const sendEmail = {
                       from: 'Check-dc Prescripton Reminder <bellohargbola13@gmail.com>',
                       to: data.createdFor.email,
@@ -325,7 +324,7 @@ cron.schedule('* * * * *', () => {
                     };
                     client.sendMail(sendEmail, function (err, info) {
                       if (err) {
-                        console.log(error);
+                        console.log(err);
                       }
                       else {
                         console.log('Message sent: ' + info.response);

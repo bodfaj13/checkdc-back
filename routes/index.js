@@ -19,7 +19,7 @@ var client = nodemailer.createTransport({
   }
 });
 
-
+// auth
 function auth(req, res, next) {
   var token = req.header("authorization");
   if (token) {
@@ -32,6 +32,7 @@ function auth(req, res, next) {
   }
 }
 
+// manipulate time
 function getRoundedTime(time) {
   var mainFormat = moment(time)
   var secs = mainFormat.second()
@@ -54,16 +55,79 @@ function getRoundedTimeAndSubtract(time) {
 
 function addIntervalToTime(time, interval) {
   var mainFormat = moment(time)
-  var add = mainFormat.add(interval, 'hours').add(5, 'minutes')
+  var add = mainFormat.add(interval, 'hours')
   var final = moment(add).format()
   return final
 }
+
+// job sheeduler for reminder
+cron.schedule('* * * * *', () => {
+  console.log(`running at ....${getRoundedTime(Date.now())}`)
+  Prescription.find({ completed: false, deleted: false })
+    .populate('createdBy')
+    .then((data) => {
+      if (data.length > 0) {
+        data.map((prescription) => {
+          let createdFor = prescription.createdBy._id
+          let prescriptionId = prescription._id
+          let interval = prescription.interval
+          let oldTime = prescription.nextReminder
+          if (getRoundedTime(Date.now()) === getRoundedTimeAndSubtract(oldTime)) {
+            Prescription.findByIdAndUpdate({ _id: prescriptionId }, {
+              nextReminder: addIntervalToTime(oldTime, interval)
+            },
+              {
+                new: true
+              }
+            ).then((data) => {
+              Reminder.create({
+                timetoUse: getRoundedTime(oldTime),
+                createdFor,
+                prescription: prescriptionId,
+                createdAt: Date.now(),
+              }).then((data) => {
+                Reminder.findOne({ _id: data._id })
+                  .populate('createdFor')
+                  .populate('prescription')
+                  .then((data) => {
+                    const sendEmail = {
+                      from: 'Check-dc Prescripton Reminder <bellohargbola13@gmail.com>',
+                      to: data.createdFor.email,
+                      subject: 'Check-dc Prescripton Reminder',
+                      html: emailTemplate.reminder(data)
+                    };
+                    client.sendMail(sendEmail, function (err, info) {
+                      if (err) {
+                        console.log(err);
+                      }
+                      else {
+                        console.log('Message sent: ' + info.response);
+                      }
+                    });
+                  }).catch((err) => {
+                    console.log(err)
+                  })
+              }).catch((err) => {
+                console.log(err)
+              })
+            }).catch((err) => {
+              console.log(err)
+            })
+          }
+        })
+      }
+    }).catch((err) => {
+      console.log(err)
+    })
+});
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
+
+// auth route
 router.post('/api/signup', function (req, res, next) {
   const { fullname, email, password, phone } = req.body
   User.findOne({ email }).then((data) => {
@@ -135,6 +199,7 @@ router.post('/api/signin', function (req, res, next) {
   })
 });
 
+// update user routes
 router.post('/api/updateprofile', auth, function (req, res, next) {
   const { email, fullname } = req.body
   User.findOne({ email }).then((data) => {
@@ -225,6 +290,7 @@ router.post('/api/updatepassword', auth, function (req, res, next) {
   })
 });
 
+// prescription
 router.post('/api/createprescription', auth, function (req, res, next) {
   const { createdBy, desc, formula, interval, name, brandname, startTime, nextReminder } = req.body
   var slug = name.toLowerCase().replace(/[' '|&|,|(|)|&|@|!|%|^|+|=]/gi,"-")
@@ -288,65 +354,6 @@ router.post('/api/createprescription', auth, function (req, res, next) {
   })
 });
 
-cron.schedule('* * * * *', () => {
-  console.log(`going ....${getRoundedTime(Date.now())}`)
-  Prescription.find({ completed: false, deleted: false })
-    .populate('createdBy')
-    .then((data) => {
-      if (data.length > 0) {
-        data.map((prescription) => {
-          let createdFor = prescription.createdBy._id
-          let prescriptionId = prescription._id
-          let interval = prescription.interval
-          if (getRoundedTime(Date.now()) === getRoundedTimeAndSubtract(prescription.nextReminder)) {
-            Prescription.findByIdAndUpdate({ _id: prescriptionId }, {
-              nextReminder: addIntervalToTime(Date.now(), interval)
-            },
-              {
-                new: true
-              }
-            ).then((data) => {
-              Reminder.create({
-                timetoUse: addIntervalToTime(Date.now(), interval),
-                createdFor,
-                prescription: prescriptionId,
-                createdAt: Date.now(),
-              }).then((data) => {
-                Reminder.findOne({ _id: data._id })
-                  .populate('createdFor')
-                  .populate('prescription')
-                  .then((data) => {
-                    const sendEmail = {
-                      from: 'Check-dc Prescripton Reminder <bellohargbola13@gmail.com>',
-                      to: data.createdFor.email,
-                      subject: 'Check-dc Prescripton Reminder',
-                      html: emailTemplate.reminder(data)
-                    };
-                    client.sendMail(sendEmail, function (err, info) {
-                      if (err) {
-                        console.log(err);
-                      }
-                      else {
-                        console.log('Message sent: ' + info.response);
-                      }
-                    });
-                  }).catch((err) => {
-                    console.log(err)
-                  })
-              }).catch((err) => {
-                console.log(err)
-              })
-            }).catch((err) => {
-              console.log(err)
-            })
-          }
-        })
-      }
-    }).catch((err) => {
-      console.log(err)
-    })
-});
-
 router.get('/api/getprescriptions', auth, (req, res, next) => {
   const { userId } = req.query
   Prescription.find({ createdBy: userId }).then((data) => {
@@ -394,6 +401,7 @@ router.post('/api/completeprescription', auth, function (req, res, next) {
   })
 })
 
+// reminders
 router.get('/api/getreminders', auth, (req, res, next) => {
   const { userId } = req.query
   Reminder.find({ createdFor: userId })
@@ -425,7 +433,5 @@ router.post('/api/markreminder', auth, function (req, res, next) {
     })
   })
 })
-
-
 
 module.exports = router;

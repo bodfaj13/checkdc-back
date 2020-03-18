@@ -355,7 +355,7 @@ module.exports = {
                                 <tr>
                                   <td class="pc-xs-fs-30 pc-xs-lh-42 pc-fb-font"
                                     style="font-family: 'Fira Sans', Helvetica, Arial, sans-serif; font-size: 36px; font-weight: 900; line-height: 46px; letter-spacing: -0.6px; color: #000 !important;;"
-                                    valign="top">Dear ${data.createdFor.fullname},</td>
+                                    valign="top">Dear ${data.createdFor.fullname}</td>
                                 </tr>
                                 <tr>
                                   <td height="10" style="font-size: 1px; line-height: 1px;">&nbsp;</td>
@@ -366,7 +366,7 @@ module.exports = {
                                   <td class="pc-fb-font"
                                     style="font-family: 'Fira Sans', Helvetica, Arial, sans-serif; font-size: 18px; font-weight: 300; line-height: 28px; color: #000;"
                                     valign="top"><br>
-                                    <p>This is reminder that its about time for you to use your prescription with the following details: </p>
+                                    <p>This is reminder that  about time for you to use your prescription with the following details: </p>
                                     <ul>
                                       <li>
                                         Product name: ${data.prescription.name}
@@ -392,6 +392,7 @@ module.exports = {
                                         Description: ${data.prescription.desc}
                                       </li>
                                     </ul>
+                                    <p>Please note that we are sending you this reminder at exacly 5 minutes before your actual use time, this is to make sure you are fully aware and get your self prepared beforen time.</p>
                                   </td>
                                 </tr>
                                 <tr>

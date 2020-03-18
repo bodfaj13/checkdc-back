@@ -382,9 +382,6 @@ module.exports = {
         'hours' : 'hour'}
                                       </li>
                                       <li>
-                                        Use Time: ${moment(getRoundedTime(data.timetoUse)).format('LLL')}
-                                      </li>
-                                      <li>
                                         Description: ${data.prescription.desc}
                                       </li>
                                     </ul>
@@ -412,7 +409,7 @@ module.exports = {
                                                       style="padding: 13px 17px; border-radius: 8px; background-color: #36B0FF;"
                                                       bgcolor="#36B0FF" valign="top" align="center">
                                                       <a class="pc-fb-font" href="https://checkdc-front-cdb53.firebaseapp.com/"
-                                                        style="line-height: 1.5; text-decoration: none; word-break: break-word; font-weight: 500; display: block; font-family: 'Fira Sans', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff;">&nbsp;<span> Click to login to mark this prescription reminder as used</span></a>
+                                                        style="line-height: 1.5; text-decoration: none; word-break: break-word; font-weight: 500; display: block; font-family: 'Fira Sans', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff;">&nbsp;<span> Click to login to confirm timing and mark this prescription reminder as used</span></a>
                                                     </td>
                                                   </tr>
                                                 </tbody>

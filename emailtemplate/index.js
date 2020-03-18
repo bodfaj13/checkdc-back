@@ -385,10 +385,6 @@ module.exports = {
                                         Use Time: ${moment(getRoundedTime(data.timetoUse)).format('LLL')}
                                       </li>
                                       <li>
-                                        Next Use Time:
-                                        ${moment(getRoundedTime(data.prescription.nextReminder)).format('LLL')}
-                                      </li>
-                                      <li>
                                         Description: ${data.prescription.desc}
                                       </li>
                                     </ul>
